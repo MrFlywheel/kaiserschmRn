@@ -1,43 +1,70 @@
-package_install <- function(packages = kaiserschmRn::dependencies, verbose = 1) {
+package_install <- function(packages = pizzR::dependencies, verbose = 1) {
 
   stopifnot(is.character(packages), verbose %in% c(0, 1, 2))
+  github_packages <- grepl("/", packages)
+  package_names <- ifelse(github_packages, sub(".*/", "", packages), packages)
 
   installed <- rownames(installed.packages())
-  to_install <- setdiff(packages, installed)
+  not_installed_idx <- which(!package_names %in% installed)
 
-  if (length(to_install) > 0) {
+  if (length(not_installed_idx) == 0) {
+    invisible(NULL)
+    return()
+  }
 
-    missing_packages <- to_install
+  cran_idx <- not_installed_idx[ !grepl("/", packages[not_installed_idx]) ]
+  github_idx <- not_installed_idx[ grepl("/", packages[not_installed_idx]) ]
+
+  install_cran_packages <- function(pkg_names) {
     repo_packages <- rownames(available.packages())
-    available_packages <- missing_packages[missing_packages %in% repo_packages]
-    unavailable_packages <- setdiff(missing_packages, available_packages)
+    available_pkgs <- pkg_names[pkg_names %in% repo_packages]
+    if (length(available_pkgs) == 0) return()
 
-    if (length(missing_packages) > 0 && length(available_packages) == 0) {
-      stop("Packages not available!")
-    }
-
-    n_missing <- length(available_packages)
     if (verbose > 0) {
-      cat(sprintf("\n\nMissing packages: %s\n", paste(available_packages, collapse = ", ")))
-      cat("\nInstalling ...\n")
+      cat(sprintf("\n\nMissing CRAN packages: %s\n", paste(available_pkgs, collapse = ", ")))
+      cat("\nInstalling CRAN packages...\n")
     }
-
-    for (i in seq_len(n_missing)) {
+    for (i in seq_along(available_pkgs)) {
       if (verbose > 0) {
-        cat(sprintf("%0*d of %d: %s\n", nchar(n_missing), i, n_missing, available_packages[i]))
+        cat(sprintf("%0*d of %d: %s\n", nchar(length(available_pkgs)), i, length(available_pkgs), available_pkgs[i]))
       }
-
       quiet <- if (verbose == 2) FALSE else TRUE
-      install.packages(available_packages[i], quiet = quiet)
+      install.packages(available_pkgs[i], quiet = quiet)
     }
+  }
 
-    installed <- rownames(installed.packages())
-    missing_after <- setdiff(packages, installed)
-    if (length(missing_after) == 0) {
-      if (verbose > 0) cat("\nDone.\n\n")
-    } else {
-      warning(sprintf("\n\nPackages not able to install: %s\n\n", paste(missing_after, collapse = ", ")))
+  install_github_packages <- function(pkgs) {
+    if (length(pkgs) == 0) return()
+
+    if (verbose > 0) {
+      cat(sprintf("\n\nMissing GitHub packages: %s\n", paste(pkgs, collapse = ", ")))
+      cat("\nInstalling GitHub packages...\n")
     }
+    for (i in seq_along(pkgs)) {
+      if (verbose > 0) {
+        cat(sprintf("%0*d of %d: %s\n", nchar(length(pkgs)), i, length(pkgs), pkgs[i]))
+      }
+      quiet <- if (verbose == 2) FALSE else TRUE
+      devtools::install_github(pkgs[i], quiet = quiet)
+    }
+  }
+
+  if (length(cran_idx) > 0) {
+    cran_pkg_names <- package_names[cran_idx]
+    install_cran_packages(cran_pkg_names)
+  }
+
+  if (length(github_idx) > 0) {
+    github_pkgs <- packages[github_idx]  # Originalstring, z.B. "Autor/Paketname"
+    install_github_packages(github_pkgs)
+  }
+
+  installed <- rownames(installed.packages())
+  missing_after <- setdiff(package_names, installed)
+  if (length(missing_after) == 0) {
+    if (verbose > 0) cat("\nDone.\n\n")
+  } else {
+    warning(sprintf("\n\nPackages not able to install: %s\n\n", paste(missing_after, collapse = ", ")))
   }
   invisible(NULL)
 }

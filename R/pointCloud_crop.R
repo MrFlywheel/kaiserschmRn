@@ -1,5 +1,5 @@
 pointCloud_crop <- function(las_path=NULL, shp_path=NULL, out_path=NULL, n_cores=NULL){
-  kaiserschmRn::package_install('foreach', 'lidR', 'parallel', 'pizzR')
+  kaiserschmRn::package_install('foreach', 'lidR', 'parallel', 'piledge/pizzR')
   library(foreach)
 
   stopifnot('las_path must be the full path name to a .las file ' = !is.null(las_path) & !is.numeric(las_path))

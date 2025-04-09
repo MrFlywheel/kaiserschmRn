@@ -1,4 +1,4 @@
-dependencies <- c('lidR', 'terra', 'feather', 'pizzR')
+dependencies <- c('lidR', 'terra', 'feather', 'piledge/pizzR')
 
 to_install <- !dependencies %in% rownames(installed.packages())
 
