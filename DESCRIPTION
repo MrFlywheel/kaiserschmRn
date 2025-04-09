@@ -1,11 +1,10 @@
 Package: kaiserschmRn
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Helper-functions for spatial data handling 
 Version: 0.1.0
 Author: MrFlywheel
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Maintainer: MrFlywheel <yourself@somewhere.net>
+Description: Several useful functions to be added
 License: MIT license
 Encoding: UTF-8
 LazyData: true
