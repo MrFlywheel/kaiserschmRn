@@ -1,12 +1,15 @@
 pointCloud_crop <- function(las_path=NULL, shp_path=NULL, out_path=NULL, n_cores=NULL){
   kaiserschmRn::package_install('foreach', 'lidR', 'parallel', 'piledge/pizzR')
   library(foreach)
+  library(doParallel)
 
   stopifnot('las_path must be the full path name to a .las file ' = !is.null(las_path) & !is.numeric(las_path))
   stopifnot('shp_path must be the full path name to a .las file ' = !is.null(shp_path) & !is.numeric(las_path))
 
   las_data <- lidR::readLAScatalog(las_path)
   polygons <- sf::st_read(shp_path)
+  stopifnot('shp file: first column must be a unique ID!' = length(unique(polygons[[1]])) == length(polygons[[1]]))
+  polygons$ID_clean <- polygons[[1]]
   if (is.null(out_path)) out_path <- file.path(dirname(las_path), '/export')
 
 
@@ -29,4 +32,5 @@ pointCloud_crop <- function(las_path=NULL, shp_path=NULL, out_path=NULL, n_cores
   }
   stopCluster(cl)
 }
+
 
