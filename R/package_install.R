@@ -1,4 +1,4 @@
-package_install <- function(packages = pizzR::dependencies, verbose = 1) {
+package_install <- function(packages = kaiserschmRn::dependencies, verbose = 1) {
 
   stopifnot(is.character(packages), verbose %in% c(0, 1, 2))
   github_packages <- grepl("/", packages)
