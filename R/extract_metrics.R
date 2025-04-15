@@ -302,7 +302,7 @@ if(type == 'lidar'){
     for (i2 in seq_along(pc_files)){
       pizzR::loop_progress(i2, 3)
       data <- readLAS(pc_files[i2])
-      lidar_metrics <- get.lidar.metrics.RGB(data, stepsize=0.1, data_type = 2, date 0 date[i1])
+      lidar_metrics <- get.lidar.metrics.RGB(data, stepsize=0.1, data_type = 2, date = date[i1])
       result <- rbind(result, lidar_metrics)
     }
 
