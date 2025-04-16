@@ -1,6 +1,7 @@
 
 extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, stepsize = 0.1, out_path = NULL, n_cores = NULL){
   library(terra)
+  library(kaiserschmRn)
   library(lidR)
   library(moments)
   library(doParallel)
@@ -8,9 +9,14 @@ extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, st
     stopifnot("Type needs to specified. Use 'lidar' for LiDAR input or 'ortho' for orthofoto (5 bands from DJI P4M) or 'texture' for a eight band Haralick texture raster." = !is.null(type))
 
     metric.name <- function(name, date){
-      return(c(paste(date, aufloesung, 'b1', name, sep = "_"), paste(date, aufloesung, 'b2', name, sep = "_"),
-               paste(date, aufloesung, 'b3', name, sep = "_"), paste(date, aufloesung, 'b4', name, sep = "_"),
-               paste(date, aufloesung, 'b5', name, sep = "_")))
+      return(c(paste(date,  'b1', name, sep = "_"), paste(date,  'b2', name, sep = "_"),
+               paste(date,  'b3', name, sep = "_"), paste(date,  'b4', name, sep = "_"),
+               paste(date,  'b5', name, sep = "_"),
+               paste(date,  'NDVI', name, sep = "_"), paste(date,  'GNDVI', name, sep = "_"),
+               paste(date,  'RENDVI', name, sep = "_"), paste(date,  'NDWI', name, sep = "_"),
+               paste(date,  'CVI', name, sep = "_"), paste(date,  'EVI', name, sep = "_"),
+               paste(date,  'CCCI', name, sep = "_"), paste(date,  'SAVI', name, sep = "_"),
+               paste(date,  'NormG', name, sep = "_"), paste(date,  'VDVI', name, sep = "_")))
     }
 
     texture.name <- function(name, date){
@@ -26,77 +32,68 @@ extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, st
 
   get.metrics <- function(data, date){
 
+    data$ID <- NULL
+
+    data$NDVI <- (data[, 5] - data[, 3]) / (data[, 5] + data[, 3])
+    data$NDVI <- kaiserschmRn::remove_Inf_Nan(data$NDVI)
+    data$GNDVI <- (data[, 5] - data[, 2]) / (data[, 5] + data[, 2])  # Gitelson et al. (1996)
+    data$GNDVI <- kaiserschmRn::remove_Inf_Nan(data$GNDVI)
+    data$RENDVI <- (data[, 5] - data[, 4]) / (data[, 5] + data[, 4])
+    data$RENDVI <- kaiserschmRn::remove_Inf_Nan(data$RENDVI)
+    data$NDWI <- (data[, 2] - data[, 5]) / (data[, 2] + data[, 5])
+    data$NDWI <- kaiserschmRn::remove_Inf_Nan(data$NDWI)
+    data$CVI <- (data[, 5] * (data[, 3] / (data[, 2] ** 2)))
+    data$CVI <- kaiserschmRn::remove_Inf_Nan(data$CVI)
+    data$EVI <- (2.5 * ((data[, 5] - data[, 3]) / ((data[, 5] + 6* data[, 3] - 7.5 * data[, 1]) + 1)))
+    data$EVI <- kaiserschmRn::remove_Inf_Nan(data$EVI)
+    data$CCCI <- (((data[, 5] - data[, 4]) / (data[, 5] + data[, 4])) / ((data[, 5] - data[, 3]) / (data[, 5] + data[, 3])))
+    data$CCCI <- kaiserschmRn::remove_Inf_Nan(data$CCCI)
+    data$SAVI <- (1 + 0.5)*(data[, 5]-data[, 3])/(data[, 5] + data[, 3] + 0.5) # Huete (1988) - Soil adjusted vegetation index
+    data$SAVI <- kaiserschmRn::remove_Inf_Nan(data$SAVI)
+    data$NormG <- data[, 2] / (data[, 1] + data[, 2] + data[, 3])
+    data$NormG <- kaiserschmRn::remove_Inf_Nan(data$NormG)
+    data$VDVI <- (2 * data[, 2] - data[, 3] - data[, 1]) /  (2 * data[, 2] + data[, 3] + data[, 1])# Huete (1988) - Soil adjusted vegetation index
+    data$VDVI <- kaiserschmRn::remove_Inf_Nan(data$VDVI)
+
+    data.means <- matrix(unlist(lapply(data, FUN=mean, na.rm = T)), ncol=ncol(data), byrow = T)
+    colnames(data.means) <- metric.name('mean', date)
+    data.sd <- matrix(unlist(lapply(data, FUN=sd, na.rm = T)), ncol=ncol(data), byrow = T)
+    colnames(data.sd) <- metric.name('sd', date)
+    data.var <- matrix(unlist(lapply(data, FUN=var, na.rm = T)), ncol=ncol(data), byrow = T)
+    colnames(data.var) <- metric.name('var', date)
+    data.skew <- matrix(unlist(lapply(data, FUN= skewness, na.rm = T)), ncol=ncol(data), byrow = T)
+    colnames(data.skew) <- metric.name('skew', date)
+    data.kurt <- matrix(unlist(lapply(data, FUN= kurtosis, na.rm = T)), ncol=ncol(data), byrow = T)
+    colnames(data.kurt) <- metric.name('kurt', date)
+    data.MAD <- matrix(unlist(lapply(data, FUN= mad, na.rm = T)), ncol=ncol(data), byrow = T)
+    colnames(data.MAD) <- metric.name('MAD', date)
+    data.IQR <- matrix(unlist(lapply(data, FUN= IQR, na.rm = T)), ncol=ncol(data), byrow = T)
+    colnames(data.IQR) <- metric.name('IQR', date)
 
 
+    data.q90 <- matrix(unlist(lapply(data, quantile, probs = c(0.90), na.rm = T)), ncol=ncol(data), byrow = T)
+    colnames(data.q90) <- metric.name('q90', date)
+    data.q80 <- matrix(unlist(lapply(data, quantile, probs = c(0.80), na.rm = T)), ncol=ncol(data), byrow = T)
+    colnames(data.q80) <- metric.name('q80', date)
+    data.q70 <- matrix(unlist(lapply(data, quantile, probs = c(0.70), na.rm = T)), ncol=ncol(data), byrow = T)
+    colnames(data.q70) <- metric.name('q70', date)
+    data.q60 <- matrix(unlist(lapply(data, quantile, probs = c(0.60), na.rm = T)), ncol=ncol(data), byrow = T)
+    colnames(data.q60) <- metric.name('q60', date)
+    data.q50 <- matrix(unlist(lapply(data, quantile, probs = c(0.50), na.rm = T)), ncol=ncol(data), byrow = T)
+    colnames(data.q50) <- metric.name('q50', date)
+    data.q40 <- matrix(unlist(lapply(data, quantile, probs = c(0.40), na.rm = T)), ncol=ncol(data), byrow = T)
+    colnames(data.q40) <- metric.name('q40', date)
+    data.q30 <- matrix(unlist(lapply(data, quantile, probs = c(0.30), na.rm = T)), ncol=ncol(data), byrow = T)
+    colnames(data.q30) <- metric.name('q30', date)
+    data.q20 <- matrix(unlist(lapply(data, quantile, probs = c(0.20), na.rm = T)), ncol=ncol(data), byrow = T)
+    colnames(data.q20) <- metric.name('q20', date)
+    data.q10 <- matrix(unlist(lapply(data, quantile, probs = c(0.10), na.rm = T)), ncol=ncol(data), byrow = T)
+    colnames(data.q10) <- metric.name('q10', date)
 
-  data$ID <- NULL
+    return(data.frame(cbind(data.means, data.sd, data.var, data.skew, data.kurt, data.q90, data.q80,
+                            data.q70, data.q60, data.q50, data.q40, data.q30, data.q20, data.q10, data.IQR)))
 
-  data.anzahl <- matrix(nrow(data))
-  colnames(data.anzahl) <- paste(date, aufloesung, 'count', sep = "_")
-  data.means <- matrix(unlist(lapply(data, FUN=mean, na.rm = T)), ncol=5, byrow = T)
-  colnames(data.means) <- metric.name('mean', date)
-  data.sd <- matrix(unlist(lapply(data, FUN=sd, na.rm = T)), ncol=5, byrow = T)
-  colnames(data.sd) <- metric.name('sd', date)
-  data.var <- matrix(unlist(lapply(data, FUN=var, na.rm = T)), ncol=5, byrow = T)
-  colnames(data.var) <- metric.name('var', date)
-  data.skew <- matrix(unlist(lapply(data, FUN= skewness, na.rm = T)), ncol=5, byrow = T)
-  colnames(data.skew) <- metric.name('skew', date)
-  data.kurt <- matrix(unlist(lapply(data, FUN= kurtosis, na.rm = T)), ncol=5, byrow = T)
-  colnames(data.kurt) <- metric.name('kurt', date)
-
-
-  data.q90 <- matrix(unlist(lapply(data, quantile, probs = c(0.90), na.rm = T)), ncol=5, byrow = T)
-  colnames(data.q90) <- metric.name('q90', date)
-  data.q80 <- matrix(unlist(lapply(data, quantile, probs = c(0.80), na.rm = T)), ncol=5, byrow = T)
-  colnames(data.q80) <- metric.name('q80', date)
-  data.q70 <- matrix(unlist(lapply(data, quantile, probs = c(0.70), na.rm = T)), ncol=5, byrow = T)
-  colnames(data.q70) <- metric.name('q70', date)
-  data.q60 <- matrix(unlist(lapply(data, quantile, probs = c(0.60), na.rm = T)), ncol=5, byrow = T)
-  colnames(data.q60) <- metric.name('q60', date)
-  data.q50 <- matrix(unlist(lapply(data, quantile, probs = c(0.50), na.rm = T)), ncol=5, byrow = T)
-  colnames(data.q50) <- metric.name('q50', date)
-  data.q40 <- matrix(unlist(lapply(data, quantile, probs = c(0.40), na.rm = T)), ncol=5, byrow = T)
-  colnames(data.q40) <- metric.name('q40', date)
-  data.q30 <- matrix(unlist(lapply(data, quantile, probs = c(0.30), na.rm = T)), ncol=5, byrow = T)
-  colnames(data.q30) <- metric.name('q30', date)
-  data.q20 <- matrix(unlist(lapply(data, quantile, probs = c(0.20), na.rm = T)), ncol=5, byrow = T)
-  colnames(data.q20) <- metric.name('q20', date)
-  data.q10 <- matrix(unlist(lapply(data, quantile, probs = c(0.10), na.rm = T)), ncol=5, byrow = T)
-  colnames(data.q10) <- metric.name('q10', date)
-
-  NDVI <- as.data.frame((data.means[, 5] - data.means[, 3]) / (data.means[, 5] + data.means[, 3]))
-  colnames(NDVI) <- VI.name('NDVI', date)
-  NDVI_NIR_G <- as.data.frame(((data.means[, 5] - data.means[, 2]) / (data.means[, 5] + data.means[, 2])))
-  colnames(NDVI_NIR_G) <- VI.name('NDVI_NIR_G', date)
-  NDVI_NIR_B <- as.data.frame((data.means[, 5] - data.means[, 1]) / (data.means[, 5] + data.means[, 1]))
-  colnames(NDVI_NIR_B) <- VI.name('NDVI_NIR_B', date)
-  NDVI_NIR_RE<- as.data.frame((data.means[, 5] - data.means[, 4]) / (data.means[, 5] + data.means[, 4]))
-  colnames(NDVI_NIR_RE) <- VI.name('NDVI_NIR_RE', date)
-  NDVI_RE_B <- as.data.frame((data.means[, 4] - data.means[, 1]) / (data.means[, 4] + data.means[, 1]))
-  colnames(NDVI_RE_B) <- VI.name('NDVI_RE_B', date)
-  NDVI_B_R <- as.data.frame((data.means[, 1] - data.means[, 3]) / (data.means[, 1] + data.means[, 3]))
-  colnames(NDVI_B_R) <- VI.name('NDVI_B_R', date)
-  GNDVI <- as.data.frame((data.means[, 5] - data.means[, 3]) / (data.means[, 5] + data.means[, 3]))
-  colnames(GNDVI) <- VI.name('GNDVI', date)
-  RENDVI <- as.data.frame((data.means[, 5] - data.means[, 4]) / (data.means[, 5] + data.means[, 4]))
-  colnames(RENDVI) <- VI.name('RENDVI', date)
-  NDWI <- as.data.frame((data.means[, 2] - data.means[, 5]) / (data.means[, 2] + data.means[, 5]))
-  colnames(NDWI) <- VI.name('NDWI', date)
-  CVI <- as.data.frame((data.means[, 5] * (data.means[, 3] / (data.means[, 2] ** 2))))
-  colnames(CVI) <- VI.name('CVI', date)
-  EVI <- as.data.frame((2.5 * ((data.means[, 5] - data.means[, 3]) / ((data.means[, 5] + 6* data.means[, 3] - 7.5 * data.means[, 1]) + 1))))
-  colnames(EVI) <- VI.name('EVI', date)
-  CCCI <- as.data.frame((((data.means[, 5] - data.means[, 4]) / (data.means[, 5] + data.means[, 4])) / ((data.means[, 5] - data.means[, 3]) / (data.means[, 5] + data.means[, 3]))))
-  colnames(CCCI) <- VI.name('CCCI', date)
-  CCCI_NIR_B_R <- as.data.frame((((data.means[, 5] - data.means[, 1]) / (data.means[, 5] + data.means[, 1]))/((data.means[, 5] - data.means[, 3])/(data.means[, 5] + data.means[, 3]))))
-  colnames(CCCI_NIR_B_R) <- VI.name('CCCI_NIR_B_R', date)
-
-
-  return(data.frame(cbind(data.anzahl, data.means, data.sd, data.var, data.q90, data.q80,
-                          data.q70, data.q60, data.q50, data.q40, data.q30, data.q20, data.q10,
-                          NDVI, NDVI_NIR_G, NDVI_NIR_B, NDVI_NIR_RE, NDVI_RE_B, NDVI_B_R, GNDVI,
-                          NDWI, RENDVI, CVI, EVI, CCCI, CCCI_NIR_B_R)))
-}
+  }
 
   get.texture <- function(data_texture, date){   #die Sache hier ist: Die Textur ist als mehrkanaliges tif zu laden. Dh die funktion metric.name funktioniert hier nicht, da diese f?r 5 b?nder ausgelegt ist.
 
@@ -320,8 +317,8 @@ if(type == 'lidar'){
   if(anyNA(result)) print('NAs found in the final extract!')
 }
 if(type == 'ortho'){
-  stopifnot("'polygons' must be specified in order to compute metrics for the areas inside the polygons. Please provide a full path to a shp-layer. First column in attribute table needs to be ID" = !is.null(polygons))
-  stopifnot('must be the same number of paths for raster and shape layers. Use shape paths multiple times if it is the same layer'= length(data_path)!=length(polygons))
+  stopifnot("'polygons' must be specified in order to compute metrics for the areas inside the polygons. Please provide a full path to a shp-layer. There needs to be 'ID' in the attribute table" = !is.null(polygons))
+  stopifnot('must be the same number of paths for raster and shape layers. Use shape paths multiple times if it is the same layer'= length(data_path)==length(polygons))
 
   if(is.null(out_path)) out_path <- file.path(dirname(data_path), '/export')
   pizzR::setcreate.wd(out_path)
@@ -329,22 +326,29 @@ if(type == 'ortho'){
   for (i1 in seq_along(data_path)){
 
     rst <- terra::rast(data_path[i1])
+    stopifnot('input raster should be a 5 band raster from DJI P4M drone' = !nlyr(rst)<5)
     rst <- rst[[1:5]]
     shp <- terra::vect(polygons[i1])
-    shp <- shp[order(shp[[1]])]
-    checkID <- shp[[1]]
-    aufloesung <- round(res(rst)[1], 3)
+    stopifnot("shape file must contain a column 'ID_1'" = !is.null(shp$ID_1))
+    shp <- shp[order(shp$ID_1)]
+    checkID <- sort(shp$ID_1)
+    aufloesung <- round(terra::res(rst)[1], 3)
 
     extr <- terra::extract(rst, shp)
-    cat(paste(date[i1], aufloesung,  ': extract successful. Continuing with texture extract...'))
+    cat(paste(date[i1], aufloesung,  ': extract successful.'))
 
-    result <- data.frame()
-    for (i2 in seq_along(checkID)){
+    if (is.null(n_cores)) num_cores <- parallel::detectCores()/2
+    cl <- parallel::makeCluster(num_cores)
+    doParallel::registerDoParallel(cl)
+    result <- foreach(i2 = seq_along(checkID), .combine = rbind, .packages = c('moments')) %dopar% {
       cat(paste0('/r', Sys.time(),' Loops remainings: ', length(checkID) - i2 + 1), '    ')
-      data <- subset(extr, extr$ID==i2)
+      data <- subset(extr, extr$ID == i2)
       result.tmp <- get.metrics(data, date[i1])
-      result <- rbind(result, result.tmp)
+      result.tmp
     }
+
+    stopCluster(cl)
+
     result <- cbind(checkID,  result)
     colnames(result)[1] <- 'Segment_ID'
 
@@ -388,6 +392,6 @@ if(type == 'texture'){
   }
   if(anyNA(result)) print('NAs found in the final extract!')
   }
-print('Extract done!')
+print('Extract done! Data written to disk.')
+pizzR::Systime()
 }
-
