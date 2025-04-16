@@ -1,7 +1,9 @@
 
-extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, stepsize = 0.1, out_path = NULL){
+extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, stepsize = 0.1, out_path = NULL, n_cores = NULL){
   library(terra)
   library(lidR)
+  library(moments)
+  library(doParallel)
 
     stopifnot("Type needs to specified. Use 'lidar' for LiDAR input or 'ortho' for orthofoto (5 bands from DJI P4M) or 'texture' for a eight band Haralick texture raster." = !is.null(type))
 
@@ -160,13 +162,17 @@ extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, st
 
   z_VCI <- matrix(lidR::VCI(data$Z + abs(min(data$Z)) , zmax = max(data$Z+ abs(min(data$Z)))), dimnames = list('', paste0('VCI_', date)))
   z_Dens <- matrix(unlist(stdmetrics_z(data$Z + abs(min(data$Z)) , zmin = min(data$Z + abs(min(data$Z)))))[28:36], ncol = 9, byrow = T, dimnames = list('', c(paste0('z_D_', date, 1:9 )))) # zmin wird standardmäßig als 0 angenommen, was nur für normalisierte PW gilt!
-  z_LAD <- lidR::LAD(data$Z) #wegen unterschiedlicher Baumhöhen würden features je nach Baum unterschiedlich sein (zb Götterbaum hat kein z25. Relative Baumhöhen zw. 0 und 1 funktieren auch nicht, da keine 1m bins. Daher nur für LAI verwendet)
+  z_LAD <- lidR::LAD(data$Z)
+  names(z_LAD) <- paste0('z_LAD_', date)
   z_LAI <- sum(z_LAD$lad, na.rm = T)
   names(z_LAI) <- paste0('z_LAI_', date)
 
   Ch_to_Cw_X <- max(data$Z) / (max(data$X) - min(data$X))
+  names(Ch_to_Cw_X) <- paste0('Ch_to_Cw_X_', date)
   Ch_to_Cw_Y <- max(data$Z) / (max(data$Y) - min(data$Y))
+  names(Ch_to_Cw_Y) <- paste0('Ch_to_Cw_Y_', date)
   z_RI <- rumple_index(data$X, data$Y, data$Z)
+  names( z_RI) <- paste0(' z_RI_', date)
 
   if(PC_type == 2){
 
@@ -294,20 +300,21 @@ if(type == 'lidar'){
   for (i1 in seq_along(data_path)){
     segments <- list.files(data_path[i1], pattern = '.las', full.names = F)
     segment_names <- segments[order(nchar(segments), segments)]
-    seg_ID <- pizzR::file_path_sans_ext(segment_names)
-    pc_files <- paste0(data_path, segment_names)
+    seg_ID <- sub("(.+)\\.[[:alnum:]]+$", "\\1", segment_names)
+    pc_files <- paste0(data_path, '/', segment_names)
 
-    result <- data.frame()
-
-    for (i2 in seq_along(pc_files)){
-      pizzR::loop_progress(i2, 3)
-      data <- readLAS(pc_files[i2])
-      lidar_metrics <- get.lidar.metrics.RGB(data, stepsize=0.1, data_type = 2, date = date[i1])
-      result <- rbind(result, lidar_metrics)
+    if (is.null(n_cores)) num_cores <- parallel::detectCores()/2
+    cl <- parallel::makeCluster(num_cores)
+    registerDoParallel(cl)
+      result <- foreach(i2 = seq_along(pc_files), .combine = rbind, .packages = c("pizzR", "lidR", 'moments')) %dopar% {
+        pizzR::loop_progress(i2, 3)
+        data <- readLAS(pc_files[i2])
+        lidar_metrics <- get.lidar.metrics.RGB(data, stepsize=0.1, PC_type = 2, date = date[i1])
+        lidar_metrics
     }
 
-    result <- cbind(seg_ID, result)
     colnames(result)[1] <- 'Segment_ID'
+    rownames(result) <- seg_ID
     write.csv2(result, paste0(date[i1],'_LiDAR_metrics.csv'))
   }
   if(anyNA(result)) print('NAs found in the final extract!')
@@ -381,6 +388,6 @@ if(type == 'texture'){
   }
   if(anyNA(result)) print('NAs found in the final extract!')
   }
-
+print('Extract done!')
 }
 
