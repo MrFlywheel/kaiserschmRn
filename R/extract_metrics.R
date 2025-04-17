@@ -59,8 +59,6 @@ extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, st
     colnames(data.means) <- metric.name('mean', date)
     data.sd <- matrix(unlist(lapply(data, FUN=sd, na.rm = T)), ncol=ncol(data), byrow = T)
     colnames(data.sd) <- metric.name('sd', date)
-    data.var <- matrix(unlist(lapply(data, FUN=var, na.rm = T)), ncol=ncol(data), byrow = T)
-    colnames(data.var) <- metric.name('var', date)
     data.skew <- matrix(unlist(lapply(data, FUN= skewness, na.rm = T)), ncol=ncol(data), byrow = T)
     colnames(data.skew) <- metric.name('skew', date)
     data.kurt <- matrix(unlist(lapply(data, FUN= kurtosis, na.rm = T)), ncol=ncol(data), byrow = T)
@@ -90,45 +88,48 @@ extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, st
     data.q10 <- matrix(unlist(lapply(data, quantile, probs = c(0.10), na.rm = T)), ncol=ncol(data), byrow = T)
     colnames(data.q10) <- metric.name('q10', date)
 
-    return(data.frame(cbind(data.means, data.sd, data.var, data.skew, data.kurt, data.q90, data.q80,
+    return(data.frame(cbind(data.means, data.sd, data.MAD, data.skew, data.kurt, data.q90, data.q80,
                             data.q70, data.q60, data.q50, data.q40, data.q30, data.q20, data.q10, data.IQR)))
 
   }
 
-  get.texture <- function(data_texture, date){   #die Sache hier ist: Die Textur ist als mehrkanaliges tif zu laden. Dh die funktion metric.name funktioniert hier nicht, da diese f?r 5 b?nder ausgelegt ist.
+    get.texture <- function(data_texture, date){
 
-  data_texture$ID <- NULL
+      data_texture$ID <- NULL
 
-  data_texture.means <- matrix(unlist(lapply(data_texture, FUN=mean, na.rm = T)), ncol=8, byrow = T)
-  colnames(data_texture.means) <- texture.name('mean', date)
-  data_texture.sd <- matrix(unlist(lapply(data_texture, FUN=sd, na.rm = T)), ncol=8, byrow = T)
-  colnames(data_texture.sd) <- texture.name('sd', date)
-  data_texture.var <- matrix(unlist(lapply(data_texture, FUN=var, na.rm = T)), ncol=8, byrow = T)
-  colnames(data_texture.var) <- texture.name('var', date)
-
-  data_texture.q90 <- matrix(unlist(lapply(data_texture, quantile, probs = c(0.90), na.rm = T)), ncol=8, byrow = T)
-  colnames(data_texture.q90) <- texture.name('q90', date)
-  data_texture.q80 <- matrix(unlist(lapply(data_texture, quantile, probs = c(0.80), na.rm = T)), ncol=8, byrow = T)
-  colnames(data_texture.q80) <- texture.name('q80', date)
-  data_texture.q70 <- matrix(unlist(lapply(data_texture, quantile, probs = c(0.70), na.rm = T)), ncol=8, byrow = T)
-  colnames(data_texture.q70) <- texture.name('q70', date)
-  data_texture.q60 <- matrix(unlist(lapply(data_texture, quantile, probs = c(0.60), na.rm = T)), ncol=8, byrow = T)
-  colnames(data_texture.q60) <- texture.name('q60', date)
-  data_texture.q50 <- matrix(unlist(lapply(data_texture, quantile, probs = c(0.50), na.rm = T)), ncol=8, byrow = T)
-  colnames(data_texture.q50) <- texture.name('q50', date)
-  data_texture.q40 <- matrix(unlist(lapply(data_texture, quantile, probs = c(0.40), na.rm = T)), ncol=8, byrow = T)
-  colnames(data_texture.q40) <- texture.name('q40', date)
-  data_texture.q30 <- matrix(unlist(lapply(data_texture, quantile, probs = c(0.30), na.rm = T)), ncol=8, byrow = T)
-  colnames(data_texture.q30) <- texture.name('q30', date)
-  data_texture.q20 <- matrix(unlist(lapply(data_texture, quantile, probs = c(0.20), na.rm = T)), ncol=8, byrow = T)
-  colnames(data_texture.q20) <- texture.name('q20', date)
-  data_texture.q10 <- matrix(unlist(lapply(data_texture, quantile, probs = c(0.10), na.rm = T)), ncol=8, byrow = T)
-  colnames(data_texture.q10) <- texture.name('q10', date)
+      data_texture.means <- matrix(unlist(lapply(data_texture, FUN=mean, na.rm = T)), ncol=ncol(data_texture), byrow = T)
+      colnames(data_texture.means) <- texture.name('mean', date)
+      data_texture.sd <- matrix(unlist(lapply(data_texture, FUN=sd, na.rm = T)), ncol=ncol(data_texture), byrow = T)
+      colnames(data_texture.sd) <- texture.name('sd', date)
+      data_texture.MAD <- matrix(unlist(lapply(data_texture, FUN= mad, na.rm = T)), ncol=ncol(data_texture), byrow = T)
+      colnames(data_texture.MAD) <- texture.name('MAD', date)
+      data_texture.IQR <- matrix(unlist(lapply(data_texture, FUN= IQR, na.rm = T)), ncol=ncol(data_texture), byrow = T)
+      colnames(data_texture.IQR) <- texture.name('IQR', date)
 
 
+      data_texture.q90 <- matrix(unlist(lapply(data_texture, quantile, probs = c(0.90), na.rm = T)), ncol=ncol(data_texture), byrow = T)
+      colnames(data_texture.q90) <- texture.name('q90', date)
+      data_texture.q80 <- matrix(unlist(lapply(data_texture, quantile, probs = c(0.80), na.rm = T)), ncol=ncol(data_texture), byrow = T)
+      colnames(data_texture.q80) <- texture.name('q80', date)
+      data_texture.q70 <- matrix(unlist(lapply(data_texture, quantile, probs = c(0.70), na.rm = T)), ncol=ncol(data_texture), byrow = T)
+      colnames(data_texture.q70) <- texture.name('q70', date)
+      data_texture.q60 <- matrix(unlist(lapply(data_texture, quantile, probs = c(0.60), na.rm = T)), ncol=ncol(data_texture), byrow = T)
+      colnames(data_texture.q60) <- texture.name('q60', date)
+      data_texture.q50 <- matrix(unlist(lapply(data_texture, quantile, probs = c(0.50), na.rm = T)), ncol=ncol(data_texture), byrow = T)
+      colnames(data_texture.q50) <- texture.name('q50', date)
+      data_texture.q40 <- matrix(unlist(lapply(data_texture, quantile, probs = c(0.40), na.rm = T)), ncol=ncol(data_texture), byrow = T)
+      colnames(data_texture.q40) <- texture.name('q40', date)
+      data_texture.q30 <- matrix(unlist(lapply(data_texture, quantile, probs = c(0.30), na.rm = T)), ncol=ncol(data_texture), byrow = T)
+      colnames(data_texture.q30) <- texture.name('q30', date)
+      data_texture.q20 <- matrix(unlist(lapply(data_texture, quantile, probs = c(0.20), na.rm = T)), ncol=ncol(data_texture), byrow = T)
+      colnames(data_texture.q20) <- texture.name('q20', date)
+      data_texture.q10 <- matrix(unlist(lapply(data_texture, quantile, probs = c(0.10), na.rm = T)), ncol=ncol(data_texture), byrow = T)
+      colnames(data_texture.q10) <- texture.name('q10', date)
 
-  return(data.frame(cbind(data_texture.means, data_texture.sd, data_texture.var, data_texture.q90, data_texture.q80,
-                          data_texture.q70, data_texture.q60, data_texture.q50, data_texture.q40, data_texture.q30, data_texture.q20, data_texture.q10)))
+
+
+      return(data.frame(cbind(data_texture.means, data_texture.sd,  data_texture.MAD, data_texture.IQR, data_texture.q90, data_texture.q80,
+                              data_texture.q70, data_texture.q60, data_texture.q50, data_texture.q40, data_texture.q30, data_texture.q20, data_texture.q10)))
 }
 
   get.lidar.metrics.RGB <- function(data, stepsize, date, PC_type=2){
@@ -368,26 +369,33 @@ if(type == 'texture'){
   for (i1 in seq_along(data_path)){
 
     rst <- terra::rast(data_path[i1])
-    rst <- rst[[1:5]]
+    stopifnot('input raster should be a 8 band raster with simple Haralick texture metrics' = !nlyr(rst)<8)
     shp <- terra::vect(polygons[i1])
-    shp <- shp[order(shp[[1]])]
-    checkID <- shp[[1]]
-    aufloesung <- round(res(rst)[1], 3)
+    stopifnot("shape file must contain a column 'ID_1'" = !is.null(shp$ID_1))
+    shp <- shp[order(shp$ID_1)]
+    checkID <- sort(shp$ID_1)
+    aufloesung <- round(terra::res(rst)[1], 3)
+    tex_name <- texture.name('', date[i1])
 
     extr <- terra::extract(rst, shp)
-    cat(paste(date[i1], aufloesung,  ': extract successful. Continuing with texture extract...'))
+    cat(paste(date[i1],': extract successful.'))
 
-    result <- data.frame()
-    for (i2 in seq_along(checkID)){
+    if (is.null(n_cores)) num_cores <- parallel::detectCores()/2
+    cl <- parallel::makeCluster(num_cores)
+    doParallel::registerDoParallel(cl)
+    result <- foreach(i2 = seq_along(checkID), .combine = rbind, .packages = c('moments')) %dopar% {
       cat(paste0('/r', Sys.time(),' Loops remainings: ', length(checkID) - i2 + 1), '    ')
-      data <- subset(extr, extr$ID==i2)
-      result.tmp <- get.texture(data_texture = data, date[i1])
-      result <- rbind(result, result.tmp)
+      data <- subset(extr, extr$ID == i2)
+      result.tmp <- get.texture(data, date[i1])
+      result.tmp
     }
+
+    stopCluster(cl)
+
     result <- cbind(checkID,  result)
     colnames(result)[1] <- 'Segment_ID'
 
-    feather::write_feather(result, paste(date[i1], aufloesung, 'extract.feather', sep = "_"))
+    feather::write_feather(result, paste(date[i1], aufloesung, 'texture_extract.feather', sep = "_"))
     write.csv2(result, paste(date[i1], aufloesung, 'texture_extract.csv', sep = "_"))
   }
   if(anyNA(result)) print('NAs found in the final extract!')
