@@ -8,7 +8,7 @@ Search (multiple) expressions in character vectors
 As many expressions as wanted can be searched for wothin each element of a vector containing character elements. Matching elements will be returned.
 }
 \usage{
-search_strings(data,  expr=NULL)
+search_strings(data, expr=NULL)
 }
 
 \arguments{
@@ -16,6 +16,7 @@ search_strings(data,  expr=NULL)
 An vector of character elements
 } \item{expr}{
 A vector containing character expressions to search for.
+}
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
