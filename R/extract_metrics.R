@@ -361,7 +361,7 @@ if(type == 'ortho'){
 }
 if(type == 'texture'){
   stopifnot("'polygons' must be specified in order to compute metrics for the areas inside the polygons. Please provide a full path to a shp-layer. First column in attribute table needs to be ID" = !is.null(polygons))
-  stopifnot('must be the same number of paths for raster and shape layers. Use shape paths multiple times if it is the same layer'= length(data_path)!=length(polygons))
+  stopifnot('must be the same number of paths for raster and shape layers. Use shape paths multiple times if it is the same layer'= length(data_path)==length(polygons))
 
   if(is.null(out_path)) out_path <- file.path(dirname(data_path), '/export')
   pizzR::setcreate.wd(out_path)
