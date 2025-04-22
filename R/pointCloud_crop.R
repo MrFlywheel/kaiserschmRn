@@ -18,8 +18,8 @@ pointCloud_crop <- function(las_path=NULL, shp_path=NULL, out_path=NULL, n_cores
     lidR::writeLAS(clipped_las, paste0(polygon$ID_clean, '.las'))
   }
 
-  if (is.null(n_cores)) num_cores <- parallel::detectCores()/2
-  cl <- parallel::makeCluster(num_cores)
+  if (is.null(n_cores)) n_cores <- parallel::detectCores()/2
+  cl <- parallel::makeCluster(n_cores)
   registerDoParallel(cl)
 
   polygon_list <- split(polygons, seq(nrow(polygons)))
