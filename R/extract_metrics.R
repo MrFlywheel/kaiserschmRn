@@ -301,8 +301,8 @@ if(type == 'lidar'){
     seg_ID <- sub("(.+)\\.[[:alnum:]]+$", "\\1", segment_names)
     pc_files <- paste0(data_path, '/', segment_names)
 
-    if (is.null(n_cores)) num_cores <- parallel::detectCores()/2
-    cl <- parallel::makeCluster(num_cores)
+    if (is.null(n_cores)) n_cores <- parallel::detectCores()/2
+    cl <- parallel::makeCluster(n_cores)
     registerDoParallel(cl)
       result <- foreach(i2 = seq_along(pc_files), .combine = rbind, .packages = c("pizzR", "lidR", 'moments')) %dopar% {
         pizzR::loop_progress(i2, 3)
@@ -339,8 +339,8 @@ if(type == 'ortho'){
     extr <- terra::extract(rst, shp)
     cat(paste(date[i1], aufloesung,  ': extract successful.'))
 
-    if (is.null(n_cores)) num_cores <- parallel::detectCores()/2
-    cl <- parallel::makeCluster(num_cores)
+    if (is.null(n_cores)) n_cores <- parallel::detectCores()/2
+    cl <- parallel::makeCluster(n_cores)
     doParallel::registerDoParallel(cl)
     result <- foreach(i2 = seq_along(checkID), .combine = rbind, .packages = c('moments')) %dopar% {
       cat(paste0('/r', Sys.time(),' Loops remainings: ', length(checkID) - i2 + 1), '    ')
@@ -382,8 +382,8 @@ if(type == 'texture'){
     extr <- terra::extract(rst, shp)
     cat(paste(date[i1],': extract successful.'))
 
-    if (is.null(n_cores)) num_cores <- parallel::detectCores()/2
-    cl <- parallel::makeCluster(num_cores)
+    if (is.null(n_cores)) n_cores <- parallel::detectCores()/2
+    cl <- parallel::makeCluster(n_cores)
     doParallel::registerDoParallel(cl)
     result <- foreach(i2 = seq_along(checkID), .combine = rbind, .packages = c('moments')) %dopar% {
       cat(paste0('/r', Sys.time(),' Loops remainings: ', length(checkID) - i2 + 1), '    ')
