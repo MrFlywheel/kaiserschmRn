@@ -308,11 +308,10 @@ if(type == 'lidar'){
         pizzR::loop_progress(i2, 3)
         data <- readLAS(pc_files[i2])
         lidar_metrics <- get.lidar.metrics.RGB(data, stepsize=0.1, PC_type = 2, date = date[i1])
-        lidar_metrics
         gc(reset = T, full = T)
-    }
+        lidar_metrics
+            }
     stopCluster(cl)
-    result <- cbind(seg_ID, result)
     colnames(result)[1] <- 'Segment_ID'
     rownames(result) <- seg_ID
     write.csv2(result, paste0(date[i1],'_LiDAR_metrics.csv'))
@@ -366,8 +365,8 @@ if(type == 'ortho'){
       cat(paste0('/r', Sys.time(),' Loops remainings: ', length(checkID) - i2 + 1), '    ')
       data <- subset(extr, extr$ID == i2)
       result.tmp <- get.metrics(data, date[i1])
-      result.tmp
       gc(full = T, reset = T)
+      result.tmp
     }
 
     stopCluster(cl)
@@ -409,8 +408,8 @@ if(type == 'texture'){
       cat(paste0('/r', Sys.time(),' Loops remainings: ', length(checkID) - i2 + 1), '    ')
       data <- subset(extr, extr$ID == i2)
       result.tmp <- get.texture(data, date[i1])
-      result.tmp
       gc(full = T, reset = T)
+      result.tmp
     }
 
     stopCluster(cl)
