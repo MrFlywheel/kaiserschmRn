@@ -1,5 +1,5 @@
 pointCloud_crop <- function(las_path=NULL, shp_path=NULL, out_path=NULL, n_cores=NULL){
-  kaiserschmRn::package_install(c('foreach', 'lidR', 'parallel', 'piledge/pizzR'))
+  kaiserschmRn::package.install(c('foreach', 'lidR', 'parallel', 'piledge/pizzR'))
   library(foreach)
   library(doParallel)
 
