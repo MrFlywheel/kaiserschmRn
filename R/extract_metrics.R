@@ -1,5 +1,5 @@
 
-extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, stepsize = 0.1, out_path = NULL, n_cores = NULL){
+extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, stepsize = 0.1, out_path = NULL, n_cores = NULL, parallel = TRUE){
   library(terra)
   library(kaiserschmRn)
   library(lidR)
@@ -290,7 +290,7 @@ extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, st
 
 if(type == 'lidar'){
 
-
+  if(parallel){
   if(is.null(out_path)) out_path <- file.path(dirname(data_path), '/export')
   pizzR::setcreate.wd(out_path)
 
@@ -311,12 +311,32 @@ if(type == 'lidar'){
         lidar_metrics
         gc(reset = T, full = T)
     }
-      stopCluster(cl)
+    stopCluster(cl)
+    result <- cbind(seg_ID, result)
     colnames(result)[1] <- 'Segment_ID'
     rownames(result) <- seg_ID
     write.csv2(result, paste0(date[i1],'_LiDAR_metrics.csv'))
   }
   if(anyNA(result)) print('NAs found in the final extract!')
+  }
+  else{
+    segments <- list.files(las_paths, pattern = '.las', full.names = F)
+    segment_names <- segments[order(nchar(segments), segments)]
+    seg_ID <- sub("(.+)\\.[[:alnum:]]+$", "\\1", segment_names)
+    pc_files <- paste0(las_paths, '/', segment_names)
+    result <- data.frame()
+    for (i2 in seq_along(pc_files)) {
+      pizzR::loop_progress(i2, 3)
+      data <- readLAS(pc_files[i2])
+      lidar_metrics <- get.lidar.metrics.RGB(data, stepsize=0.1, PC_type = 2, date = date[i1])
+      result <- rbind(result, lidar_metrics)
+      gc(reset = T, full = T)
+    }
+    result <- cbind(seg_ID, result)
+    colnames(result)[1] <- 'Segment_ID'
+    rownames(result) <- seg_ID
+    write.csv2(result, paste0(date1[i1],'_LiDAR_metrics.csv'))
+    }
 }
 if(type == 'ortho'){
   stopifnot("'polygons' must be specified in order to compute metrics for the areas inside the polygons. Please provide a full path to a shp-layer. There needs to be 'ID' in the attribute table" = !is.null(polygons))

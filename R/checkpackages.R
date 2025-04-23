@@ -1,4 +1,4 @@
-dependencies <- c('moments', 'lidR', 'terra', 'feather', 'piledge/pizzR', "parallel", 'doParallel', 'foreach')
+dependencies <- c('moments', 'lidR', 'terra', 'feather', 'piledge/pizzR', "parallel", 'doParallel', 'foreach', 'geometry')
 
 installed_pkgs <- installed.packages()[, "Package"]
 missing_deps  <- setdiff(dependencies, installed_pkgs)
