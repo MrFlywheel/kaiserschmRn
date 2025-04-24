@@ -1,7 +1,7 @@
 Package: kaiserschmRn
 Type: Package
 Title: Helper-functions for spatial data handling 
-Version: 0.1.0
+Version: 0.1.1
 Author: MrFlywheel
 Maintainer: MrFlywheel <yourself@somewhere.net>
 Description: Several useful functions to be added

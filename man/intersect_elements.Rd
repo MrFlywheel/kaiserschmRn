@@ -8,12 +8,12 @@ Find the intersect of multiple integer vectors
 As many vectors containing integer values can be passed on to search the intersection of all vectors, which will be returned.
 }
 \usage{
-unique_elements(vectors)
+intersect_elements(vectors)
 }
 
 \arguments{
   \item{vectors}{
-One or more vectors of integer values
+One or more vectors of integer values to search the intersection of.
 }
 }
 \details{
