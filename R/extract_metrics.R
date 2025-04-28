@@ -1,4 +1,4 @@
-extract_metrics_local <- function(data_path, type=NULL, date = NULL, polygons=NULL, stepsize = 0.1, out_path = NULL, PC_type = NULL, n_cores = NULL, parallel = TRUE){
+extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, stepsize = 0.1, out_path = NULL, PC_type = NULL, n_cores = NULL, parallel = TRUE){
   library(terra)
   library(kaiserschmRn)
   library(lidR)
