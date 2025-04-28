@@ -431,9 +431,9 @@ extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, st
         cat(paste0('/r', Sys.time(),' Loops remainings: ', length(checkID) - i2 + 1), '    ')
         data <- subset(extr, extr$ID == i2)
         result.tmp <- get.metrics(data, date[i1])
-        result.tmp
         gc(full = T, reset = T)
-      }
+        result.tmp
+        }
 
       stopCluster(cl)
 
@@ -474,9 +474,9 @@ extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, st
         cat(paste0('/r', Sys.time(),' Loops remainings: ', length(checkID) - i2 + 1), '    ')
         data <- subset(extr, extr$ID == i2)
         result.tmp <- get.texture(data, date[i1])
-        result.tmp
         gc(full = T, reset = T)
-      }
+        result.tmp
+        }
 
       stopCluster(cl)
 
