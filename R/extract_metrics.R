@@ -6,7 +6,6 @@ extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, st
   library(doParallel)
 
   stopifnot("Type needs to specified. Use 'lidar' for LiDAR input or 'ortho' for orthofoto (5 bands from DJI P4M) or 'texture' for a eight band Haralick texture raster." = !is.null(type))
-  stopifnot("Point cloud type must be specified. 'PC_type=2' is for a LiDAR point cloud, 'PC_type=3', is for photogrammetric point cloud " = !is.null(PC_type)& type=='lidar')
 
   metric.name <- function(name, date){
     return(c(paste(date,  'b1', name, sep = "_"), paste(date,  'b2', name, sep = "_"),
