@@ -15,7 +15,7 @@ pointCloud_crop(las_path=NULL, shp_path=NULL, out_path=NULL, n_cores=NULL)
   \item{las_path}{
 Item to be cropped. A full path to a '.las' file. Will not be read to memory directly.
 } \item{shp_path}{
-Item used for croppping. A full path to a the shape file used for cropping.
+Item used for croppping. A full path to a the shape file used for cropping. First column of the attribute table should be an unique ID which is used for naming the output las-files.
 } \item{out_path}{
 Path of the output directory. Will create a sub folder 'export' in the 'las_path' directory, if not specified.
 }\item{n_cores}{
@@ -26,7 +26,7 @@ Number of course used for parallelisation. As a default half of the PC's logical
 %%  ~~ If necessary, more details than the description above ~~
 }
 \value{
-The function will write '.las' files for each polygon.
+The function will write '.las' files for each polygon of the input shape file.
 }
 \references{
 %% ~put references to the literature/web site here ~
@@ -43,16 +43,7 @@ MrFlywheel
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
-\examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
 
-## The function is currently defined as
-function (x)
-{
-  }
-}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory (show via RShowDoc("KEYWORDS")):
 % \keyword{ ~kwd1 }

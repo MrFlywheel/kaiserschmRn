@@ -6,6 +6,8 @@ pointCloud_crop <- function(las_path=NULL, shp_path=NULL, out_path=NULL, n_cores
   stopifnot('las_path must be the full path name to a .las file ' = !is.null(las_path) & !is.numeric(las_path))
   stopifnot('shp_path must be the full path name to a .las file ' = !is.null(shp_path) & !is.numeric(las_path))
 
+  t1 <- Sys.time()
+  cat('Task starting...', pizzR::Systime())
   las_data <- lidR::readLAScatalog(las_path)
   polygons <- sf::st_read(shp_path)
   stopifnot('shp file: first column must be a unique ID!' = length(unique(polygons[[1]])) == length(polygons[[1]]))
@@ -31,6 +33,10 @@ pointCloud_crop <- function(las_path=NULL, shp_path=NULL, out_path=NULL, n_cores
     gc(reset = T, full = T)
   }
   stopCluster(cl)
+  t2 <-Sys.time()
+  runtime <- as.numeric(t2 - t1)
+  if(units(t2 - t1) == 'secs') cat(round(runtime, digits = 2), 'seconds passed for processing') else cat(round(runtime, digits = 2), 'minutes passed for processing')
 }
+
 
 
