@@ -1,4 +1,4 @@
-roughness_RMSE <- function(las_path, res = 1, dtm = NULL, filter_height = NULL){
+roughness_RMSE <- function(las_object, res = 1, dtm = NULL, filter_height = NULL){
   kaiserschmRn::package.install(c('lidR', 'terra'))
   library(lidR)
   library(terra)
@@ -13,7 +13,7 @@ roughness_RMSE <- function(las_path, res = 1, dtm = NULL, filter_height = NULL){
 
   assign("rmse_plane_function", rmse_plane_function, envir = .GlobalEnv)
 
-  las <- readLAS(las_path)
+  las <- las_object
   normalised <- any(head(las$Classification == 2) & (head(las$Z)>2))
   stopifnot("las needs to be a height normalised point cloud. Please provide a path to a dtm over the variable 'dtm'" = normalised & !is.null(dtm))
   if(!is.null(dtm)){
