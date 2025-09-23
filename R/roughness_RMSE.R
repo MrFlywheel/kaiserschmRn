@@ -1,4 +1,5 @@
 roughness_RMSE <- function(las_path, res = 1, dtm = NULL, filter_height = NULL){
+  kaiserschmRn::package.install(c('lidR', 'terra'))
   library(lidR)
   library(terra)
 
@@ -7,7 +8,10 @@ roughness_RMSE <- function(las_path, res = 1, dtm = NULL, filter_height = NULL){
     z_fit <- predict(fit)
     residuals <- z - z_fit
     rmse <- sqrt(mean(residuals^2, na.rm = TRUE))
-    return(rmse)}
+    return(rmse)
+    }
+
+  assign("rmse_plane_function", rmse_plane_function, envir = .GlobalEnv)
 
   las <- readLAS(las_path)
   normalised <- any(head(las$Classification == 2) & (head(las$Z)>2))
@@ -23,3 +27,4 @@ roughness_RMSE <- function(las_path, res = 1, dtm = NULL, filter_height = NULL){
   plot(rmse_raster)
   return(rmse_raster)
 }
+
