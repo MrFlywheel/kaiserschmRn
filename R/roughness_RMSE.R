@@ -15,7 +15,7 @@ roughness_RMSE <- function(las_object, res = 1, dtm = NULL, filter_height = NULL
 
   las <- las_object
   normalised <- any(head(las$Classification == 2) & (head(las$Z)>2))
-  stopifnot("las needs to be a height normalised point cloud. Please provide a path to a dtm over the variable 'dtm'" = normalised & !is.null(dtm))
+  stopifnot("las needs to be a height normalised point cloud. Please provide a path to a dtm over the variable 'dtm'" = normalised && !is.null(dtm))
   if(!is.null(dtm)){
     dtm <- terra::rast(dtm)
     las <- las - dtm
@@ -27,4 +27,5 @@ roughness_RMSE <- function(las_object, res = 1, dtm = NULL, filter_height = NULL
   plot(rmse_raster)
   return(rmse_raster)
 }
+
 
