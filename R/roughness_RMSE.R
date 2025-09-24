@@ -1,4 +1,4 @@
-roughness_RMSE <- function(las_object, res = 1, dtm = NULL, filter_height = NULL){
+roughness_RMSE <- function(las_object, resolution = 1, dtm = NULL, filter_height = NULL){
   kaiserschmRn::package.install(c('lidR', 'terra'))
   library(lidR)
   library(terra)
@@ -9,7 +9,7 @@ roughness_RMSE <- function(las_object, res = 1, dtm = NULL, filter_height = NULL
     residuals <- z - z_fit
     rmse <- sqrt(mean(residuals^2, na.rm = TRUE))
     return(rmse)
-    }
+  }
 
   assign("rmse_plane_function", rmse_plane_function, envir = .GlobalEnv)
 
@@ -23,9 +23,7 @@ roughness_RMSE <- function(las_object, res = 1, dtm = NULL, filter_height = NULL
   nlas_filtered <- filter_poi(las, Z < filter_height)
   stopifnot("specify a height above ground with variable 'filter_height' which should be still considered to compute roughness" = !is.null(filter_height))
 
-  rmse_raster <- grid_metrics(nlas_filtered, res = res, rmse_plane_function(X, Y, Z))
+  rmse_raster <- grid_metrics(nlas_filtered, res = resolution, rmse_plane_function(X, Y, Z))
   plot(rmse_raster)
   return(rmse_raster)
 }
-
-
