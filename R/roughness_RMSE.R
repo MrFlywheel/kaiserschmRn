@@ -1,7 +1,7 @@
 roughness_RMSE <- function(las_object, resolution = 1, dtm = NULL, filter_height = NULL, plot_raster = T){
   kaiserschmRn::package.install(c('lidR', 'terra'))
-  library(lidR)
-  library(terra)
+  #library(lidR)
+  #library(terra)
 
   rmse_plane_function <- function(x, y, z) {
     fit <- lm(z ~ x + y)
