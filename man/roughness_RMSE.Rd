@@ -8,7 +8,7 @@ Compute surface roughness of a point cloud
 Surface roughness is computed with the RMSE of of z-vlaues compared to a fitted plane, where 'resolution' defines the resolution of a raster cell where the plane is fitted. Needs to be a normalised point cloud, as otherwise the RMSE would vary depending on the location of the cell. This function normalises a point cloud by using lidR's functions when a dtm is provided.
 }
 \usage{
-roughness_RMSE(las_object, res = 1, dtm = NULL, filter_height = NULL)
+roughness_RMSE(las_object, res = 1, dtm = NULL, filter_height = NULL, plot_raster = T)
 }
 
 \arguments{
@@ -20,6 +20,8 @@ Resolution of the raster cells to fit the plane.
 Path to a DTM. Only needs to be provided, if point cloud is not already height normalised.
 }\item{filter_height}{
 Heigh threshold to consider for roughness calculation.
+}\item{plot_raster}{
+If true, raster will be plotted
 }
 }
 \details{
