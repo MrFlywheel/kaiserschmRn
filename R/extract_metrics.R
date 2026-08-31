@@ -422,13 +422,13 @@ extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, st
       aufloesung <- round(terra::res(rst)[1], 3)
 
       extr <- terra::extract(rst, shp)
+      extr_ID <- unique(extr$ID)
       cat(paste(date[i1], aufloesung,  ': extract successful.'))
 
       if (is.null(n_cores)) n_cores <- parallel::detectCores()/2
       cl <- parallel::makeCluster(n_cores)
       doParallel::registerDoParallel(cl)
-      result <- foreach(i2 = seq_along(checkID), .combine = rbind, .packages = c('moments')) %dopar% {
-        cat(paste0('/r', Sys.time(),' Loops remainings: ', length(checkID) - i2 + 1), '    ')
+      result <- foreach(i2 = extr_ID, .combine = rbind, .packages = c('moments')) %dopar% {
         data <- subset(extr, extr$ID == i2)
         result.tmp <- get.metrics(data, date[i1])
         gc(full = T, reset = T)
@@ -437,8 +437,9 @@ extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, st
 
       stopCluster(cl)
 
-      result <- cbind(checkID,  result)
+      result <- cbind(checkID, extr_ID, result)
       colnames(result)[1] <- 'Segment_ID'
+      colnames(result)[2] <- 'Extract_ID'
 
       feather::write_feather(result, paste(date[i1], aufloesung, 'extract.feather', sep = "_"))
       write.csv2(result, paste(date[i1], aufloesung, 'extract.csv', sep = "_"))
@@ -465,13 +466,13 @@ extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, st
       tex_name <- texture.name('', date[i1])
 
       extr <- terra::extract(rst, shp)
+      extr_ID <- unique(extr$ID)
       cat(paste(date[i1],': extract successful.'))
 
       if (is.null(n_cores)) n_cores <- parallel::detectCores()/2
       cl <- parallel::makeCluster(n_cores)
       doParallel::registerDoParallel(cl)
-      result <- foreach(i2 = seq_along(checkID), .combine = rbind, .packages = c('moments')) %dopar% {
-        cat(paste0('/r', Sys.time(),' Loops remainings: ', length(checkID) - i2 + 1), '    ')
+      result <- foreach(i2 = extr_ID, .combine = rbind, .packages = c('moments')) %dopar% {
         data <- subset(extr, extr$ID == i2)
         result.tmp <- get.texture(data, date[i1])
         gc(full = T, reset = T)
@@ -480,8 +481,9 @@ extract_metrics <- function(data_path, type=NULL, date = NULL, polygons=NULL, st
 
       stopCluster(cl)
 
-      result <- cbind(checkID,  result)
+      result <- cbind(checkID, extr_ID, result)
       colnames(result)[1] <- 'Segment_ID'
+      colnames(result)[2] <- 'Extract_ID'
 
       feather::write_feather(result, paste(date[i1], aufloesung, 'texture_extract.feather', sep = "_"))
       write.csv2(result, paste(date[i1], aufloesung, 'texture_extract.csv', sep = "_"))
